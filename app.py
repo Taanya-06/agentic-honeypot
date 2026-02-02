@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from detector import is_scam
 from agent import agent_reply
 from extractor import extract
-from memory import init_session, add_message, add_intel
+from memory import init_session, add_message, add_intel, get_session
 from callback import send_callback
 
 load_dotenv()
@@ -53,9 +53,15 @@ def honey_pot():
     intel = extract(message)
     add_intel(session_id, intel)
 
-    # 🚨 FINAL CALLBACK CONDITION
-    if intel.get("upiIds") or intel.get("phishingLinks"):
+    # 🚨 FINAL CALLBACK (ONLY ONCE PER SESSION)
+    session = get_session(session_id)
+    if (
+        session
+        and not session.get("callbackSent")
+        and (intel.get("upiIds") or intel.get("phishingLinks") or intel.get("bankAccounts"))
+    ):
         send_callback(session_id)
+        session["callbackSent"] = True   # 🔒 prevent duplicate callbacks
 
     return jsonify({
         "status": "success",
@@ -66,5 +72,3 @@ def honey_pot():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     app.run(host="0.0.0.0", port=port)
-
-

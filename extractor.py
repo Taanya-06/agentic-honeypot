@@ -1,13 +1,15 @@
 import re
 
-def extract(text):
+def extract(text: str) -> dict:
+    upi = re.findall(r'\b[\w.-]+@[\w.-]+\b', text)
+    links = re.findall(r'https?://\S+', text)
+    accounts = re.findall(r'\b\d{9,18}\b', text)
+
     return {
-        "bankAccounts": re.findall(r"\b\d{9,18}\b", text),
-        "upiIds": re.findall(r"\b[\w.-]+@[\w]+\b", text),
-        "phishingLinks": re.findall(r"https?://\S+", text),
-        "phoneNumbers": re.findall(r"\+91\d{10}", text),
-        "suspiciousKeywords": [
-            k for k in ["urgent", "verify", "blocked", "otp"]
-            if k in text.lower()
-        ]
+        "upiIds": upi,
+        "phishingLinks": links,
+        "bankAccounts": accounts,
+        "phoneNumbers": [],
+        "suspiciousKeywords": []
     }
+

@@ -16,9 +16,9 @@ def send_callback(session_id):
         "suspiciousKeywords": []
     }
 
-    for item in session["intel"]:
+    for intel in session["intel"]:
         for key in final_intel:
-            final_intel[key].extend(item.get(key, []))
+            final_intel[key].extend(intel.get(key, []))
 
     payload = {
         "sessionId": session_id,
@@ -29,6 +29,7 @@ def send_callback(session_id):
     }
 
     try:
-        requests.post(GUVI_URL, json=payload, timeout=2)
+        requests.post(GUVI_URL, json=payload, timeout=5)
     except Exception:
         pass
+

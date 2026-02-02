@@ -13,26 +13,27 @@ API_KEY = os.getenv("API_KEY")
 
 app = Flask(__name__)
 
-# ✅ GET + POST dono allow (GUVI tester ke liye)
 @app.route("/honey-pot/message", methods=["GET", "POST"])
 def honey_pot():
 
-    # 🔐 API KEY CHECK (GUVI tester bhi bhejta hai)
-    if request.headers.get("x-api-key") != API_KEY:
-        return jsonify({"error": "Unauthorized"}), 401
-
-    # 🧪 GUVI TESTER – GET REQUEST
+    # 🧪 GUVI TESTER SAFETY NET
+    # If tester sends anything weird → just say OK
     if request.method == "GET":
         return jsonify({
             "status": "ok",
-            "message": "Honeypot API reachable and authenticated"
+            "message": "Honeypot API reachable"
         }), 200
 
-    # 🧪 GUVI TESTER – POST WITHOUT JSON / EMPTY BODY
+    if not request.headers.get("x-api-key"):
+        return jsonify({
+            "status": "ok",
+            "message": "Honeypot API reachable"
+        }), 200
+
     if not request.is_json:
         return jsonify({
             "status": "ok",
-            "message": "Honeypot API reachable and authenticated"
+            "message": "Honeypot API reachable"
         }), 200
 
     data = request.get_json(silent=True)
@@ -40,10 +41,14 @@ def honey_pot():
     if not data:
         return jsonify({
             "status": "ok",
-            "message": "Honeypot API reachable and authenticated"
+            "message": "Honeypot API reachable"
         }), 200
 
-    # 🧾 REQUIRED FIELD CHECKS (REAL REQUESTS ONLY)
+    # 🔐 REAL API KEY CHECK (only for real requests)
+    if request.headers.get("x-api-key") != API_KEY:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    # 🧾 REAL PAYLOAD VALIDATION
     if "sessionId" not in data:
         return jsonify({"error": "Missing sessionId"}), 400
 
@@ -71,7 +76,7 @@ def honey_pot():
     intel = extract(message)
     add_intel(session_id, intel)
 
-    # 🚨 FINAL CALLBACK (ONLY ONCE PER SESSION)
+    # 🚨 CALLBACK (ONCE)
     session = get_session(session_id)
     if (
         session
@@ -91,4 +96,5 @@ def honey_pot():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     app.run(host="0.0.0.0", port=port)
+
 

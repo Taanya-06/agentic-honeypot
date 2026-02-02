@@ -2,12 +2,6 @@ import random
 import re
 
 def agent_reply(user_text: str) -> str:
-    """
-    Context-aware honeypot replies.
-    - Matches message intent (bank, urgency, kyc, upi, phishing, otp)
-    - Safe, neutral, human-like (English + Hinglish)
-    - Encourages scammers to reveal links / payment details
-    """
 
     if not user_text:
         return _fallback()

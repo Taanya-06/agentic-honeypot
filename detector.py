@@ -7,17 +7,17 @@ def is_scam(text: str) -> bool:
     text = text.lower()
     score = 0
 
-    # 🔗 Phishing links (very strong signal)
+    # Phishing links (very strong signal)
     if re.search(r"https?://|www\.", text):
         score += 3
 
-    # 🏦 Bank / account related
+    # Bank / account related
     if any(k in text for k in [
         "bank", "account", "blocked", "suspended", "freeze", "deactivated"
     ]):
         score += 2
 
-    # ⏰ Pressure / urgency (VERY IMPORTANT)
+    # Pressure / urgency (VERY IMPORTANT)
     if any(k in text for k in [
         "urgent",
         "immediately",
@@ -29,7 +29,7 @@ def is_scam(text: str) -> bool:
     ]):
         score += 2
 
-    # 🆔 Verification / KYC
+    # Verification / KYC
     if any(k in text for k in [
         "verify",
         "verification",
@@ -38,7 +38,7 @@ def is_scam(text: str) -> bool:
     ]):
         score += 1
 
-    # 💳 Payment / UPI
+    # Payment / UPI
     if any(k in text for k in [
         "upi",
         "send money",
@@ -48,7 +48,7 @@ def is_scam(text: str) -> bool:
     ]):
         score += 2
 
-    # 🧾 Credentials
+    # Credentials
     if any(k in text for k in [
         "otp",
         "pin",
@@ -57,6 +57,4 @@ def is_scam(text: str) -> bool:
     ]):
         score += 3
 
-    # ✅ DECISION LOGIC
-    # Pressure-only scam allowed
     return score >= 2

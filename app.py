@@ -13,32 +13,37 @@ API_KEY = os.getenv("API_KEY")
 
 app = Flask(__name__)
 
-@app.route("/honey-pot/message", methods=["POST"])
+# ✅ GET + POST dono allow (GUVI tester ke liye)
+@app.route("/honey-pot/message", methods=["GET", "POST"])
 def honey_pot():
 
-    # 🔐 API KEY CHECK
+    # 🔐 API KEY CHECK (GUVI tester bhi bhejta hai)
     if request.headers.get("x-api-key") != API_KEY:
         return jsonify({"error": "Unauthorized"}), 401
 
-    # 🧪 GUVI TESTER BYPASS
-    # Tester sends POST but NO JSON / NO Content-Type
+    # 🧪 GUVI TESTER – GET REQUEST
+    if request.method == "GET":
+        return jsonify({
+            "status": "ok",
+            "message": "Honeypot API reachable and authenticated"
+        }), 200
+
+    # 🧪 GUVI TESTER – POST WITHOUT JSON / EMPTY BODY
     if not request.is_json:
         return jsonify({
             "status": "ok",
             "message": "Honeypot API reachable and authenticated"
         }), 200
 
-    # 📦 SAFE JSON READ
     data = request.get_json(silent=True)
 
-    # 🧪 EMPTY BODY / {} CASE
     if not data:
         return jsonify({
             "status": "ok",
             "message": "Honeypot API reachable and authenticated"
         }), 200
 
-    # 🧾 REQUIRED FIELD CHECKS
+    # 🧾 REQUIRED FIELD CHECKS (REAL REQUESTS ONLY)
     if "sessionId" not in data:
         return jsonify({"error": "Missing sessionId"}), 400
 
@@ -82,6 +87,8 @@ def honey_pot():
         "reply": reply
     })
 
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     app.run(host="0.0.0.0", port=port)
+

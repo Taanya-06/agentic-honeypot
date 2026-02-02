@@ -43,8 +43,8 @@ def honey_pot():
             "scamDetected": False
         }), 200
 
-    # 🤖 AGENT RESPONSE
-    reply = agent_reply()
+    # 🤖 AGENT RESPONSE (✅ FIXED)
+    reply = agent_reply(text)
 
     # 🕵️ EXTRACT INTEL
     intel = extract(text)
@@ -52,7 +52,7 @@ def honey_pot():
 
     # 🚨 CALLBACK ONCE
     session = get_session(session_id)
-    if not session.get("callbackSent"):
+    if session and not session.get("callbackSent"):
         send_callback(session_id)
         session["callbackSent"] = True
 
@@ -66,4 +66,3 @@ def honey_pot():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     app.run(host="0.0.0.0", port=port)
-

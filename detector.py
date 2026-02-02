@@ -1,89 +1,62 @@
+import re
+
 def is_scam(text: str) -> bool:
     if not text:
         return False
 
     text = text.lower()
+    score = 0
 
-    scam_keywords = [
+    # 🔗 Phishing links (very strong signal)
+    if re.search(r"https?://|www\.", text):
+        score += 3
 
-        # 🏦 Bank / Account Threats
-        "bank account",
-        "account will be blocked",
-        "account blocked",
-        "account suspended",
-        "account suspension",
-        "account freeze",
-        "account deactivated",
-        "account limited",
+    # 🏦 Bank / account related
+    if any(k in text for k in [
+        "bank", "account", "blocked", "suspended", "freeze", "deactivated"
+    ]):
+        score += 2
 
-        # ⏰ Urgency / Fear Tactics
+    # ⏰ Pressure / urgency (VERY IMPORTANT)
+    if any(k in text for k in [
         "urgent",
         "immediately",
-        "verify immediately",
-        "action required",
-        "last warning",
         "final notice",
-        "today only",
-        "within 24 hours",
-        "failure to comply",
+        "action required",
+        "within 24",
+        "today",
+        "last warning"
+    ]):
+        score += 2
 
-        # 🆔 KYC / Verification Scams
+    # 🆔 Verification / KYC
+    if any(k in text for k in [
+        "verify",
+        "verification",
         "kyc",
-        "kyc pending",
-        "kyc expired",
-        "kyc update",
-        "verify kyc",
-        "re-kyc",
-        "document verification",
+        "document"
+    ]):
+        score += 1
 
-        # 💳 UPI / Payment Scams
+    # 💳 Payment / UPI
+    if any(k in text for k in [
         "upi",
-        "upi id",
         "send money",
-        "request money",
-        "payment failed",
-        "payment pending",
-        "refund pending",
-        "claim refund",
-        "test payment",
-        "processing fee",
+        "payment",
+        "refund",
+        "processing fee"
+    ]):
+        score += 2
 
-        # 🔗 Phishing / Fake Links
-        "click link",
-        "verify link",
-        "secure link",
-        "login now",
-        "confirm details",
-        "update details",
-        "reset password",
-        "suspicious activity",
-        "unusual activity",
-
-        # 📱 Impersonation / Authority
-        "bank support",
-        "customer care",
-        "technical team",
-        "official team",
-        "rbi",
-        "government",
-        "income tax",
-        "it department",
-        "cyber cell",
-
-        # 🧾 OTP / Credential Theft
+    # 🧾 Credentials
+    if any(k in text for k in [
         "otp",
-        "share otp",
-        "do not share otp",
         "pin",
-        "atm pin",
-        "cvv",
         "password",
-        "login credentials"
-    ]
+        "cvv"
+    ]):
+        score += 3
 
-    # 🔍 Scam detection logic
-    for keyword in scam_keywords:
-        if keyword in text:
-            return True
-
-    return False
+    # ✅ DECISION LOGIC
+    # Pressure-only scam allowed
+    return score >= 2

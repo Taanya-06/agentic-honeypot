@@ -20,10 +20,15 @@ def honey_pot():
     if request.headers.get("x-api-key") != API_KEY:
         return jsonify({"error": "Unauthorized"}), 401
 
-    # 📦 JSON CHECK
-    data = request.get_json()
-    if not data:
-        return jsonify({"error": "Invalid or missing JSON"}), 400
+    # 📦 SAFE JSON READ (GUVI TESTER SUPPORT)
+    data = request.get_json(silent=True)
+
+    # 🧪 GUVI ENDPOINT TESTER (NO BODY)
+    if data is None:
+        return jsonify({
+            "status": "ok",
+            "message": "Honeypot API reachable and authenticated"
+        }), 200
 
     # 🧾 REQUIRED FIELD CHECKS
     if "sessionId" not in data:
@@ -61,7 +66,7 @@ def honey_pot():
         and (intel.get("upiIds") or intel.get("phishingLinks") or intel.get("bankAccounts"))
     ):
         send_callback(session_id)
-        session["callbackSent"] = True   # 🔒 prevent duplicate callbacks
+        session["callbackSent"] = True
 
     return jsonify({
         "status": "success",

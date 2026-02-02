@@ -23,8 +23,8 @@ def honey_pot():
     # 📦 SAFE JSON READ (GUVI TESTER SUPPORT)
     data = request.get_json(silent=True)
 
-    # 🧪 GUVI ENDPOINT TESTER (NO BODY)
-    if data is None:
+    # 🧪 GUVI ENDPOINT TESTER (NO BODY OR EMPTY BODY)
+    if not data:
         return jsonify({
             "status": "ok",
             "message": "Honeypot API reachable and authenticated"

@@ -13,10 +13,17 @@ API_KEY = os.getenv("API_KEY", "honeypot@123")
 
 app = Flask(__name__)
 
-@app.route("/honey-pot/message", methods=["POST"])
+@app.route("/honey-pot/message", methods=["GET", "POST"])
 def honey_pot():
 
-    # 🔐 API KEY CHECK
+    # ✅ HANDLE BROWSER / HEALTH CHECK
+    if request.method == "GET":
+        return jsonify({
+            "status": "success",
+            "reply": "Honeypot API is running"
+        }), 200
+
+    # 🔐 API KEY CHECK (POST only)
     if request.headers.get("x-api-key") != API_KEY:
         return jsonify({
             "status": "success",
@@ -31,7 +38,7 @@ def honey_pot():
             "reply": "Message processed"
         }), 200
 
-    # 🔹 EXTRACT TEXT SAFELY (ignore extra fields)
+    # 🔹 SAFE EXTRACTION (ignore extra fields)
     session_id = data.get("sessionId", "unknown-session")
     message_obj = data.get("message", {})
     text = message_obj.get("text", "")
@@ -56,11 +63,11 @@ def honey_pot():
     # 🤖 AGENT RESPONSE
     reply = agent_reply(text)
 
-    # 🕵️ INTELLIGENCE EXTRACTION (internal use)
+    # 🕵️ INTELLIGENCE EXTRACTION (internal)
     intel = extract(text)
     add_intel(session_id, intel)
 
-    # 🚨 CALLBACK (internal, silent)
+    # 🚨 CALLBACK (silent, once)
     session = get_session(session_id)
     if session and not session.get("callbackSent"):
         try:
@@ -69,7 +76,7 @@ def honey_pot():
         except Exception:
             pass
 
-    # ✅ FINAL RESPONSE (STRICT FORMAT)
+    # ✅ FINAL GUVI-EXPECTED RESPONSE
     return jsonify({
         "status": "success",
         "reply": reply
@@ -79,3 +86,4 @@ def honey_pot():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     app.run(host="0.0.0.0", port=port)
+

@@ -16,14 +16,14 @@ app = Flask(__name__)
 @app.route("/honey-pot/message", methods=["GET", "POST"])
 def honey_pot():
 
-    # ✅ HANDLE BROWSER / HEALTH CHECK
+    # 🔹 GET = Health check only (browser / render)
     if request.method == "GET":
         return jsonify({
             "status": "success",
-            "reply": "Honeypot API is running"
+            "reply": "OK"
         }), 200
 
-    # 🔐 API KEY CHECK (POST only)
+    # 🔐 API KEY CHECK
     if request.headers.get("x-api-key") != API_KEY:
         return jsonify({
             "status": "success",
@@ -38,7 +38,7 @@ def honey_pot():
             "reply": "Message processed"
         }), 200
 
-    # 🔹 SAFE EXTRACTION (ignore extra fields)
+    # 🔹 EXTRACT INPUT SAFELY
     session_id = data.get("sessionId", "unknown-session")
     message_obj = data.get("message", {})
     text = message_obj.get("text", "")
@@ -53,21 +53,21 @@ def honey_pot():
     init_session(session_id)
     add_message(session_id, text)
 
-    # 🛑 SCAM CHECK
+    # 🛑 SCAM DETECTION
     if not is_scam(text):
         return jsonify({
             "status": "success",
             "reply": "Message processed"
         }), 200
 
-    # 🤖 AGENT RESPONSE
+    # 🤖 AGENT REPLY (BASED ON SCAM MESSAGE)
     reply = agent_reply(text)
 
-    # 🕵️ INTELLIGENCE EXTRACTION (internal)
+    # 🕵️ INTEL EXTRACTION (internal)
     intel = extract(text)
     add_intel(session_id, intel)
 
-    # 🚨 CALLBACK (silent, once)
+    # 🚨 CALLBACK (once, silent)
     session = get_session(session_id)
     if session and not session.get("callbackSent"):
         try:
@@ -76,7 +76,7 @@ def honey_pot():
         except Exception:
             pass
 
-    # ✅ FINAL GUVI-EXPECTED RESPONSE
+    # ✅ FINAL RESPONSE (GUVI FORMAT)
     return jsonify({
         "status": "success",
         "reply": reply
@@ -86,4 +86,5 @@ def honey_pot():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     app.run(host="0.0.0.0", port=port)
+
 

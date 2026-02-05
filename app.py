@@ -20,7 +20,7 @@ def honey_pot():
     if request.method == "GET":
         return jsonify({
             "status": "success",
-            "reply": "OK"
+            "reply": "what should i do now??"
         }), 200
 
     # 🔐 API KEY CHECK

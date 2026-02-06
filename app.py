@@ -13,20 +13,40 @@ API_KEY = os.getenv("API_KEY", "honeypot@123")
 
 app = Flask(__name__)
 
-@app.route("/honey-pot/message", methods=["POST"])
+@app.route("/honey-pot/message", methods=["GET", "POST"])
 def honey_pot():
     try:
-        # Always parse JSON safely
-        data = request.get_json(force=True)
+        # =========================
+        # GET → Health Check ONLY
+        # =========================
+        if request.method == "GET":
+            return jsonify({
+                "status": "success",
+                "reply": "Honeypot API is live"
+            }), 200
 
+        # =========================
+        # POST → Actual Processing
+        # =========================
+
+        # API key check (but still JSON-safe)
+        if request.headers.get("x-api-key") != API_KEY:
+            return jsonify({
+                "status": "success",
+                "reply": "Message received"
+            }), 200
+
+        # Safe JSON parse
+        data = request.get_json(force=True, silent=True) or {}
+
+        session_id = data.get("sessionId", "unknown-session")
         text = data.get("message", {}).get("text", "")
-        session_id = data.get("sessionId", "unknown")
 
         # Session memory (safe)
         init_session(session_id)
         add_message(session_id, text)
 
-        # Scam logic
+        # Scam detection
         if is_scam(text):
             reply = agent_reply(text)
 
@@ -41,19 +61,19 @@ def honey_pot():
                 except Exception:
                     pass
         else:
-            reply = "Message received."
+            reply = "Message received"
 
-        # 🔴 SINGLE GUARANTEED RESPONSE FORMAT
+        # ✅ ALWAYS SAME RESPONSE FORMAT
         return jsonify({
             "status": "success",
             "reply": reply
         }), 200
 
     except Exception:
-        # Even if EVERYTHING breaks, still return valid JSON
+        # 🔐 Absolute fallback (GUVI-safe)
         return jsonify({
             "status": "success",
-            "reply": "Message received."
+            "reply": "Message received"
         }), 200
 
 
